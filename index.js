@@ -29,7 +29,7 @@ const verifyJWT = (req, res, next) => {
     if (!authorization) {
         return res.status(401).send({ error: true, message: 'unauthorize access' })
     }
-    const token = authorization.sp; IDBTransaction(' ')[1];
+    const token = authorization.split(' ')[1];
     console.log('token inside verify JWT', token);
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
         if (error) {
@@ -43,7 +43,7 @@ const verifyJWT = (req, res, next) => {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
 
         const serviceCollection = client.db('carDoctor').collection('services');
@@ -81,7 +81,11 @@ async function run() {
         //bookings
 
         app.get('/bookings', verifyJWT, async (req, res) => {
-            console.log('came back after verify');
+            const decoded = req.decoded;
+            console.log('came back after verify', decoded);
+            if (decoded.email !== req.query.email) {
+                return res.status(403).send({ error: 1, message: 'forbidden access' })
+            }
             let query = {};
             if (req.query?.email) {
                 query = { email: req.query.email }
